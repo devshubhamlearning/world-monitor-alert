@@ -2,43 +2,36 @@ import requests
 import time
 import os
 
-SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")
+SLACK_WEBHOOK = os.environ["SLACK_WEBHOOK"]
 
 URL = "https://www.worldmonitor.app/api/events?timeRange=7d"
 
 seen_events = set()
 
 def send_slack(msg):
-    payload = {
-        "text": msg
-    }
-    requests.post(SLACK_WEBHOOK, json=payload)
+    requests.post(SLACK_WEBHOOK, json={"text": msg})
 
 def check_events():
     global seen_events
+
     try:
         r = requests.get(URL, timeout=10)
         events = r.json()
 
         for event in events:
             eid = event.get("id")
-            title = event.get("title")
-            location = event.get("location")
 
             if eid not in seen_events:
                 seen_events.add(eid)
 
-                message = f"""
-🚨 *New Global Event*
+                title = event.get("title")
+                location = event.get("location")
 
-*Event:* {title}
-*Location:* {location}
-Source: World Monitor
-"""
+                message = f"🚨 New Event\n{title}\nLocation: {location}"
                 send_slack(message)
 
     except Exception as e:
-        print("Error:", e)
+        print(e)
 
 while True:
     check_events()
