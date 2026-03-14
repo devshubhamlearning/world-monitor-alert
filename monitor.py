@@ -1,16 +1,18 @@
 import requests
 import time
+import os
 
-BOT_TOKEN = "YOUR_BOT_TOKEN"
-CHAT_ID = "YOUR_CHAT_ID"
+SLACK_WEBHOOK = os.getenv("SLACK_WEBHOOK")
 
 URL = "https://www.worldmonitor.app/api/events?timeRange=7d"
 
 seen_events = set()
 
-def send_telegram(msg):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    requests.post(url, json={"chat_id": CHAT_ID, "text": msg})
+def send_slack(msg):
+    payload = {
+        "text": msg
+    }
+    requests.post(SLACK_WEBHOOK, json=payload)
 
 def check_events():
     global seen_events
@@ -26,8 +28,14 @@ def check_events():
             if eid not in seen_events:
                 seen_events.add(eid)
 
-                message = f"🚨 New Event\n{title}\nLocation: {location}"
-                send_telegram(message)
+                message = f"""
+🚨 *New Global Event*
+
+*Event:* {title}
+*Location:* {location}
+Source: World Monitor
+"""
+                send_slack(message)
 
     except Exception as e:
         print("Error:", e)
