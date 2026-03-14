@@ -40,7 +40,7 @@ def check_site():
 
     for word in KEYWORDS:
         if word in text:
-            send_slack(f"⚠️ Keyword detected on WorldMonitor page: {word}")
+            send_slack(f"⚠️ Keyword detected: {word}")
             print("Alert sent:", word)
 
 
